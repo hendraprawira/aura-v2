@@ -1,0 +1,123 @@
+{{ define "login/login.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Motor Apps Login</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the yellow gradient, replacing the original pink/red */
+        .text-wrap {
+            /* Start: #ffed89 (Light Yellow) to End: #ffc837 (Vibrant Yellow) */
+            background: #ffed89; /* Fallback */
+            background: -moz-linear-gradient(135deg, #ffed89 0%, #ffc837 100%);
+            background: -webkit-linear-gradient(135deg, #ffed89 0%, #ffc837 100%);
+            background: -o-linear-gradient(135deg, #ffed89 0%, #ffc837 100%);
+            background: -ms-linear-gradient(135deg, #ffed89 0%, #ffc837 100%);
+            background: linear-gradient(135deg, #ffed89 0%, #ffc837 100%);
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffed89', endColorstr='#ffc837', GradientType=1 );
+            
+            /* Text color remains white for contrast */
+            color: #fff;
+            border-radius: 0.75rem; /* Apply rounded corners */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Ensure inner text elements are white and bold */
+        .text-wrap .text h2 {
+            font-weight: 900;
+            color: #fff;
+            font-size: 2.25rem; /* Large text for focus */
+        }
+        .text-wrap .text p {
+            color: rgba(255, 255, 255, 0.9); /* Slightly translucent white for body text */
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Styling for the Sign Up button */
+        .btn-white {
+            background-color: white;
+            color: #ffc837; /* Use the vibrant yellow as text color for contrast */
+            border: 2px solid white;
+            padding: 0.65rem 2rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            transition: all 0.3s ease-in-out;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-white:hover {
+            background-color: transparent;
+            color: white;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background for contrast */
+        }
+
+        /* Example wrapper for a centered card layout */
+        .login-card {
+            max-width: 900px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 768px) {
+            .login-card {
+                flex-direction: row;
+            }
+            /* Make sure the gradient wrap takes half the width on desktop */
+            .text-wrap {
+                width: 50%;
+                border-top-right-radius: 0.75rem;
+                border-bottom-right-radius: 0.75rem;
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="login-card rounded-xl shadow-2xl bg-white overflow-hidden">
+
+        <div class="p-8 lg:p-12 w-full md:w-1/2 flex items-center justify-center">
+            <div class="w-full max-w-sm">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Welcome Back</h1>
+                <p class="text-gray-600 mb-8">Sign in to continue to Aura Motor Apps.</p>
+                
+                {{ if .Error }}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                  <span class="block sm:inline">{{ .Error }}</span>
+                </div>
+                {{ end }}
+                <form action="/login" method="POST">
+                    <input type="text" placeholder="Username" name="username" class="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" required>
+                    <input type="password" placeholder="Password" name="password" class="w-full p-3 mb-6 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500" required>
+                    <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold p-3 rounded-lg transition duration-200">
+                        Login
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="text-wrap p-8 lg:p-12 text-center flex items-center justify-center w-full md:w-1/2 order-first md:order-last">
+            <div class="text w-full">
+                <h2>Aura Motor Apps</h2>
+                <p>Don't have an account?</p>
+                <a href="#" class="btn btn-white">Sign Up</a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
+{{ end }}
