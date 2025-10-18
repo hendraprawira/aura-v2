@@ -29,29 +29,29 @@
         <div class="sidebar-wrapper scrollbar scrollbar-inner">
           <div class="sidebar-content">
             <ul class="nav nav-secondary">
-              <li class="nav-item active">
-                <a
-                  href="#dashboard"
-                >
+              <li class="nav-item {{if eq .activeMenu "dashboard"}}active{{end}}">
+                <a href="/">
                   <i class="fas fa-home"></i>
                   <p>Dashboard</p>
                 </a>
               </li>
+            
               <li class="nav-item">
-                <a data-bs-toggle="collapse" href="#base">
+                <a data-bs-toggle="collapse" href="#base" aria-expanded="{{if eq .activeGroup "master-data"}}true{{else}}false{{end}}">
                   <i class="fas fa-layer-group"></i>
                   <p>Master Data</p>
                   <span class="caret"></span>
                 </a>
-                <div class="collapse" id="base">
+              
+                <div class="collapse {{if eq .activeGroup "master-data"}}show{{end}}" id="base">
                   <ul class="nav nav-collapse">
-                    <li>
-                      <a href="components/avatars.html">
+                    <li class="{{if eq .activeMenu "data-barang"}}active{{end}}">
+                      <a href="/data-barang">
                         <span class="sub-item">Data Barang</span>
                       </a>
                     </li>
-                    <li>
-                      <a href="components/buttons.html">
+                    <li class="{{if eq .activeMenu "data-jasa"}}active{{end}}">
+                      <a href="/data-jasa">
                         <span class="sub-item">Data Jasa</span>
                       </a>
                     </li>

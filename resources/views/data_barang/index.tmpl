@@ -4,155 +4,102 @@
   {{ template "layout/head.tmpl" . }}
   <body>
     <div class="wrapper">
-    {{ template "layout/sidebar.tmpl" . }}
-     <div class="main-panel">
-        <div class="main-header">
-          <div class="main-header-logo">
-            <!-- Logo Header -->
-            <div class="logo-header" data-background-color="dark">
-              <a href="index.html" class="logo">
-                <img
-                  src="/assets/img/kaiadmin/logo_light.svg"
-                  alt="navbar brand"
-                  class="navbar-brand"
-                  height="20"
-                />
-              </a>
-              <div class="nav-toggle">
-                <button class="btn btn-toggle toggle-sidebar">
-                  <i class="gg-menu-right"></i>
-                </button>
-                <button class="btn btn-toggle sidenav-toggler">
-                  <i class="gg-menu-left"></i>
-                </button>
-              </div>
-              <button class="topbar-toggler more">
-                <i class="gg-more-vertical-alt"></i>
-              </button>
-            </div>
-            <!-- End Logo Header -->
-          </div>
-          <!-- Navbar Header -->
-          {{ template "layout/header.tmpl" . }}
-          <!-- End Navbar -->
-        </div>
-
+      {{ template "layout/sidebar.tmpl" . }}
+      <div class="main-panel">
+        {{ template "layout/header.tmpl" . }}
         <div class="container">
           <div class="page-inner">
-            <div
-              class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4"
-            >
-              <div>
-                <h3 class="fw-bold mb-3">Dashboard</h3>
-                <h6 class="op-7 mb-2">Free Bootstrap 5 Admin Dashboard</h6>
+            <h3 class="fw-bold mb-3">Data Barang</h3>
+
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">List Barang</h4>
               </div>
-              <div class="ms-md-auto py-2 py-md-0">
-                <a href="#" class="btn btn-label-info btn-round me-2">Manage</a>
-                <a href="#" class="btn btn-primary btn-round">Add Customer</a>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
-                  <div class="card-body">
-                    <div class="row align-items-center">
-                      <div class="col-icon">
-                        <div
-                          class="icon-big text-center icon-primary bubble-shadow-small"
-                        >
-                          <i class="fas fa-users"></i>
-                        </div>
-                      </div>
-                      <div class="col col-stats ms-3 ms-sm-0">
-                        <div class="numbers">
-                          <p class="card-category">Visitors</p>
-                          <h4 class="card-title">1,294</h4>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
-                  <div class="card-body">
-                    <div class="row align-items-center">
-                      <div class="col-icon">
-                        <div
-                          class="icon-big text-center icon-info bubble-shadow-small"
-                        >
-                          <i class="fas fa-user-check"></i>
-                        </div>
-                      </div>
-                      <div class="col col-stats ms-3 ms-sm-0">
-                        <div class="numbers">
-                          <p class="card-category">Subscribers</p>
-                          <h4 class="card-title">1303</h4>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
-                  <div class="card-body">
-                    <div class="row align-items-center">
-                      <div class="col-icon">
-                        <div
-                          class="icon-big text-center icon-success bubble-shadow-small"
-                        >
-                          <i class="fas fa-luggage-cart"></i>
-                        </div>
-                      </div>
-                      <div class="col col-stats ms-3 ms-sm-0">
-                        <div class="numbers">
-                          <p class="card-category">Sales</p>
-                          <h4 class="card-title">$ 1,345</h4>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
-                  <div class="card-body">
-                    <div class="row align-items-center">
-                      <div class="col-icon">
-                        <div
-                          class="icon-big text-center icon-secondary bubble-shadow-small"
-                        >
-                          <i class="far fa-check-circle"></i>
-                        </div>
-                      </div>
-                      <div class="col col-stats ms-3 ms-sm-0">
-                        <div class="numbers">
-                          <p class="card-category">Order</p>
-                          <h4 class="card-title">576</h4>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div class="card-body">
+    <div class="table-responsive">
+        <table
+            id="basic-datatables"
+            class="display table table-striped table-hover"
+        >
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Kode Barang</th>
+                    <th>Nama Barang</th>
+                    <th>Merk</th>
+                    <th>Stock</th>
+                    <th>Harga Pokok</th>
+                    <th>Harga Jual Ecer</th>
+                    <th>Stock Min.</th>
+                    <th>Stock Max.</th>
+                    <th>Ket</th>
+                    <th>Latest Update</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+</div>
             </div>
           </div>
         </div>
         {{ template "layout/footer.tmpl" . }}
       </div>
     </div>
-    <!--   Core JS Files   -->
+
+    <!-- JS -->
     <script src="/assets/js/core/jquery-3.7.1.min.js"></script>
     <script src="/assets/js/core/popper.min.js"></script>
     <script src="/assets/js/core/bootstrap.min.js"></script>
-    <!-- jQuery Scrollbar -->
-    <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
-    <!-- Datatables -->
     <script src="/assets/js/plugin/datatables/datatables.min.js"></script>
-
-    <!-- Kaiadmin JS -->
-    <script src="/assets/js/kaiadmin.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $("#basic-datatables").DataTable({
+      "processing": true,       // Tampilkan indikator loading
+      "serverSide": true,       // AKTIFKAN SERVER-SIDE PROCESSING
+      "ajax": {
+        "url": "/api/data-barang", // <-- Ganti dengan endpoint Goravel Anda
+        "type": "GET"
+      },
+      "columns": [
+        // Urutan harus sesuai dengan header tabel dan data JSON dari Goravel
+        { "data": "No", "orderable": false }, // Kolom No (Index)
+        { "data": "KodeItem" },
+        { "data": "NamaItem" },
+        { "data": "Merk" },
+        { "data": "Stok" },
+        { "data": "HargaPokok" },
+        { "data": "HargaJual" },
+        { "data": "StokMinimal" },
+        { "data": "StokMaksimal" },
+        { "data": "Keterangan" },
+        { "data": "UpdatedAt" },
+        { "data": "Aksi", "orderable": false, "searchable": false } // Kolom Aksi
+      ],
+      "columnDefs": [
+        {
+            // Untuk merender kolom Aksi (misalnya menambahkan tombol)
+            "targets": 11,
+            "render": function (data, type, row, meta) {
+                // Di sini Anda bisa membuat tombol Edit/Delete/dll.
+                // Data 'row' berisi semua data untuk baris tersebut.
+                return `<a href="/data-barang/edit/${row.ID}" class="btn btn-sm btn-info">Edit</a>`;
+            }
+        },
+        {
+            // Untuk merender kolom No (indeks, harus dihitung di sisi server/client)
+            "targets": 0,
+            "render": function (data, type, row, meta) {
+                 // Hitung nomor baris: start + index + 1
+                return meta.settings._iDisplayStart + meta.row + 1;
+            }
+        }
+      ]
+    });
+  });
+</script>
   </body>
 </html>
 {{ end }}

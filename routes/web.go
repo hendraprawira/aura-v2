@@ -5,11 +5,19 @@ import (
 
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
-	"github.com/goravel/framework/route"
 )
 
+func RequireLogin(handler func(ctx http.Context) http.Response) func(ctx http.Context) http.Response {
+	return func(ctx http.Context) http.Response {
+		username := ctx.Request().Cookie("username")
+		if username == "" {
+			return ctx.Response().Redirect(http.StatusFound, "/login")
+		}
+		return handler(ctx)
+	}
+}
+
 func Web() {
-	// ✅ Serve static files from ./public/assets
 	facades.Route().Static("/assets", "./public/assets")
 	authController := controllers.AuthController{}
 	barangController := controllers.BarangController{}
@@ -24,16 +32,22 @@ func Web() {
 		if username == "" {
 			return ctx.Response().Redirect(http.StatusFound, "/login")
 		}
-
 		return ctx.Response().View().Make("index.tmpl", map[string]any{
-			"username": username,
-			"role":     role,
+			"username":    username,
+			"role":        role,
+			"activeGroup": "dashboard",
+			"activeMenu":  "dashboard",
+			"menu":        "Dashboard",
 		})
 	})
-	// facades.Route().Get("/data-barang", barangController.Index)
-	facades.Route().Group(func(router route.Route) {
-		router.Middleware(facades.Route().Middleware("auth")).
-			Prefix("/barang").
-			Get("/", new(controllers.BarangController).Index)
-1``	})
+	facades.Route().Get("/data-barang", RequireLogin(barangController.Index))
+
+	facades.Route().Get("/logout", func(ctx http.Context) http.Response {
+		ctx.Response().Cookie(http.Cookie{Name: "user_id", Value: "", MaxAge: -1})
+		ctx.Response().Cookie(http.Cookie{Name: "username", Value: "", MaxAge: -1})
+		ctx.Response().Cookie(http.Cookie{Name: "role", Value: "", MaxAge: -1})
+		return ctx.Response().Redirect(http.StatusFound, "/login")
+	})
+	facades.Route().Get("/api/data-barang", barangController.DatatablesAPI)
+
 }
