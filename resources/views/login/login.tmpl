@@ -5,8 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aura Motor Apps Login</title>
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="icon"
+      href="/assets/img/auramo.png"
+      type="image/x-icon"
+    />
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <style>
         /* Custom styles for the yellow gradient, replacing the original pink/red */
@@ -90,7 +95,7 @@
 
         <div class="p-8 lg:p-12 w-full md:w-1/2 flex items-center justify-center">
             <div class="w-full max-w-sm">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Welcome Back</h1>
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Aura Motor Apps</h1>
                 <p class="text-gray-600 mb-8">Sign in to continue to Aura Motor Apps.</p>
                 
                 {{ if .Error }}
@@ -110,14 +115,10 @@
         
         <div class="text-wrap p-8 lg:p-12 text-center flex items-center justify-center w-full md:w-1/2 order-first md:order-last">
             <div class="text w-full">
-                <h2>Aura Motor Apps</h2>
-                <p>Don't have an account?</p>
-                <a href="#" class="btn btn-white">Sign Up</a>
-            </div>
+                <img src="/assets/img/auramo.png" alt="Aura Motor Apps Logo" class="max-w-xs mx-auto mt-4 mb-8">
+                </div>
         </div>
-
     </div>
-
 </body>
 </html>
 {{ end }}

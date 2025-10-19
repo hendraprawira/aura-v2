@@ -1,105 +1,55 @@
 {{ define "data_barang/index.tmpl" }}
 <!DOCTYPE html>
 <html lang="en">
-  {{ template "layout/head.tmpl" . }}
-  <body>
-    <div class="wrapper">
-      {{ template "layout/sidebar.tmpl" . }}
-      <div class="main-panel">
-        {{ template "layout/header.tmpl" . }}
-        <div class="container">
-          <div class="page-inner">
-            <h3 class="fw-bold mb-3">Data Barang</h3>
+{{ template "layout/head.tmpl" . }}
 
-            <div class="card">
-              <div class="card-header">
-                <h4 class="card-title">List Barang</h4>
+<body>
+  {{ template "data_barang/_style.tmpl" . }}
+  <div class="wrapper">
+    {{ template "layout/sidebar.tmpl" . }}
+    <div class="main-panel">
+      {{ template "layout/mainheader.tmpl" . }}
+      <div class="container">
+        <div class="page-inner">
+          <h3 class="fw-bold mb-3">Data Barang</h3>
+
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">List Barang</h4>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table id="basic-datatables" class="display table table-striped table-hover">
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th>Kode Barang</th>
+                      <th>Nama Barang</th>
+                      <th>Merk</th>
+                      <th>Stock</th>
+                      <th>Harga Pokok</th>
+                      <th>Harga Jual Ecer</th>
+                      <th>Stock Min.</th>
+                      <th>Stock Max.</th>
+                      <th>Ket</th>
+                      <th>Latest Update</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
               </div>
-              <div class="card-body">
-    <div class="table-responsive">
-        <table
-            id="basic-datatables"
-            class="display table table-striped table-hover"
-        >
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Kode Barang</th>
-                    <th>Nama Barang</th>
-                    <th>Merk</th>
-                    <th>Stock</th>
-                    <th>Harga Pokok</th>
-                    <th>Harga Jual Ecer</th>
-                    <th>Stock Min.</th>
-                    <th>Stock Max.</th>
-                    <th>Ket</th>
-                    <th>Latest Update</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                </tbody>
-        </table>
-    </div>
-</div>
             </div>
           </div>
         </div>
-        {{ template "layout/footer.tmpl" . }}
       </div>
+      {{ template "layout/footer.tmpl" . }}
     </div>
+  </div>
+  <!-- JS -->
+  {{ template "data_barang/_datatable_script.tmpl" . }}
+</body>
 
-    <!-- JS -->
-    <script src="/assets/js/core/jquery-3.7.1.min.js"></script>
-    <script src="/assets/js/core/popper.min.js"></script>
-    <script src="/assets/js/core/bootstrap.min.js"></script>
-    <script src="/assets/js/plugin/datatables/datatables.min.js"></script>
-<script>
-  $(document).ready(function () {
-    $("#basic-datatables").DataTable({
-      "processing": true,       // Tampilkan indikator loading
-      "serverSide": true,       // AKTIFKAN SERVER-SIDE PROCESSING
-      "ajax": {
-        "url": "/api/data-barang", // <-- Ganti dengan endpoint Goravel Anda
-        "type": "GET"
-      },
-      "columns": [
-        // Urutan harus sesuai dengan header tabel dan data JSON dari Goravel
-        { "data": "No", "orderable": false }, // Kolom No (Index)
-        { "data": "KodeItem" },
-        { "data": "NamaItem" },
-        { "data": "Merk" },
-        { "data": "Stok" },
-        { "data": "HargaPokok" },
-        { "data": "HargaJual" },
-        { "data": "StokMinimal" },
-        { "data": "StokMaksimal" },
-        { "data": "Keterangan" },
-        { "data": "UpdatedAt" },
-        { "data": "Aksi", "orderable": false, "searchable": false } // Kolom Aksi
-      ],
-      "columnDefs": [
-        {
-            // Untuk merender kolom Aksi (misalnya menambahkan tombol)
-            "targets": 11,
-            "render": function (data, type, row, meta) {
-                // Di sini Anda bisa membuat tombol Edit/Delete/dll.
-                // Data 'row' berisi semua data untuk baris tersebut.
-                return `<a href="/data-barang/edit/${row.ID}" class="btn btn-sm btn-info">Edit</a>`;
-            }
-        },
-        {
-            // Untuk merender kolom No (indeks, harus dihitung di sisi server/client)
-            "targets": 0,
-            "render": function (data, type, row, meta) {
-                 // Hitung nomor baris: start + index + 1
-                return meta.settings._iDisplayStart + meta.row + 1;
-            }
-        }
-      ]
-    });
-  });
-</script>
-  </body>
 </html>
 {{ end }}

@@ -2,8 +2,11 @@ package controllers
 
 import (
 	"aura/app/models"
+	"fmt"
+	"io"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
@@ -84,44 +87,209 @@ func (a *BarangController) DatatablesAPI(ctx http.Context) http.Response {
 	// Apply limit dan offset
 	db.Offset(start).Limit(length).Find(&barangList)
 
+	var formattedList []BarangResponse
+	for _, b := range barangList {
+		rowClass := ""
+		if b.Stok == 0 {
+			rowClass = "stock-empty" // Putih (Default, tapi bisa di-highlight jika perlu)
+		} else if b.Stok < b.StokMinimal {
+			rowClass = "stock-warning" // Kuning (Kurang dari minimal)
+		} else {
+			rowClass = "stock-safe" // Hijau (Aman, lebih besar dari minimal)
+		}
+
+		formatted := BarangResponse{
+
+			ID:           b.ID,
+			KodeItem:     b.KodeItem,
+			NamaItem:     b.NamaItem,
+			Merk:         b.Merk,
+			Stok:         b.Stok,
+			HargaPokok:   b.HargaPokok,
+			HargaJual:    b.HargaJual,
+			StokMinimal:  b.StokMinimal,
+			StokMaksimal: b.StokMaksimal,
+			Keterangan:   b.Keterangan,
+			UpdatedAt:    formatWIB(b.UpdatedAt),
+			RowClass:     rowClass,
+		}
+		formattedList = append(formattedList, formatted)
+	}
+
 	// 7. Bentuk Respons JSON Datatables
 	response := models.DatatablesResponse{
 		Draw:            draw,
 		RecordsTotal:    totalRecords,
 		RecordsFiltered: recordsFiltered,
-		Data:            barangList,
+		Data:            formattedList,
 	}
 
 	return ctx.Response().Json(http.StatusOK, response)
 }
 
-// AJAX search / load more
-func (b *BarangController) Search(ctx http.Context) http.Response {
-	query := ctx.Request().Input("query", "")
-	page := ctx.Request().InputInt("page", 1)
-	perPage := ctx.Request().InputInt("per_page", 10)
-
-	dbQuery := facades.Orm().Query().Table("data_barang").Where("is_deleted", 0)
-	if query != "" {
-		dbQuery = dbQuery.Where("nama_item", "LIKE", "%"+query+"%").
-			OrWhere("kode_item", "LIKE", "%"+query+"%").
-			OrWhere("kode_barcode", "LIKE", "%"+query+"%").
-			OrWhere("merk", "LIKE", "%"+query+"%").
-			OrWhere("sku_barang", "LIKE", "%"+query+"%")
+func (b *BarangController) DetailAPI(ctx http.Context) http.Response {
+	// Ambil ID dari parameter URL, contoh: /api/data-barang/123/detail
+	barangID := ctx.Request().Route("id")
+	if barangID == "" {
+		return ctx.Response().Json(http.StatusBadRequest, map[string]string{"message": "ID Barang tidak ditemukan"})
 	}
 
-	total, _ := dbQuery.Count()
+	var barang models.DataBarang
+	// Cari barang berdasarkan ID dan hanya ambil kolom harga yang diperlukan
+	err := facades.Orm().Query().Select("harga_toko", "harga_orang", "harga_bengkel", "kode_item").Where("id = ? AND is_deleted = ?", barangID, false).First(&barang)
 
-	var barangList []models.DataBarang
-	dbQuery.OrderBy("id", "desc").
-		Offset((page - 1) * perPage).
-		Limit(perPage).
-		Get(&barangList)
+	if err != nil {
+		// Jika tidak ditemukan atau error database
+		return ctx.Response().Json(http.StatusNotFound, map[string]string{"message": "Data Barang tidak ditemukan"})
+	}
 
-	return ctx.Response().Json(200, map[string]any{
-		"barangList": barangList,
-		"total":      total,
-		"page":       page,
-		"perPage":    perPage,
-	})
+	// Buat respons yang hanya berisi data harga spesifik
+	response := map[string]interface{}{
+		"kode_item":     barang.KodeItem,
+		"harga_toko":    barang.HargaToko,
+		"harga_orang":   barang.HargaOrang,
+		"harga_bengkel": barang.HargaBengkel,
+	}
+
+	return ctx.Response().Json(http.StatusOK, response)
+}
+
+// EditAPI: Mengambil data barang lengkap untuk ditampilkan di form edit
+func (b *BarangController) EditAPI(ctx http.Context) http.Response {
+	barangID := ctx.Request().Route("id")
+	if barangID == "" {
+		return ctx.Response().Json(http.StatusBadRequest, map[string]string{"message": "ID Barang tidak ditemukan"})
+	}
+
+	var barang models.DataBarang
+	// Ambil SEMUA data yang diperlukan untuk form edit
+	err := facades.Orm().Query().Where("id = ? AND is_deleted = ?", barangID, false).First(&barang)
+
+	if err != nil {
+		return ctx.Response().Json(http.StatusNotFound, map[string]string{"message": "Data Barang tidak ditemukan"})
+	}
+
+	// Kirim objek model DataBarang utuh (atau mapping jika perlu, tapi DataBarang sudah cukup)
+	return ctx.Response().Json(http.StatusOK, barang)
+}
+
+// Update: Menyimpan perubahan data barang
+func (b *BarangController) Update(ctx http.Context) http.Response {
+	username := ctx.Request().Cookie("username")
+	user_id, _ := strconv.Atoi(ctx.Request().Cookie("user_id"))
+
+	now := time.Now()
+	barangID := ctx.Request().Route("id")
+	if barangID == "" {
+		return ctx.Response().Json(http.StatusBadRequest, map[string]string{"message": "ID Barang tidak ditemukan"})
+	}
+
+	var req UpdateBarangRequest
+	if err := ctx.Request().Bind(&req); err != nil {
+		return ctx.Response().Json(http.StatusBadRequest, map[string]string{"message": "Gagal membaca JSON: " + err.Error()})
+	}
+
+	body, _ := io.ReadAll(ctx.Request().Origin().Body)
+	fmt.Println("RAW BODY:", string(body))
+	ctx.Request().Bind(&req)
+	fmt.Printf("PARSED REQUEST: %+v\n", req)
+	fmt.Print(ctx.Request())
+
+	// 1. Validasi Sederhana
+	if req.NamaItem == "" || req.Stok < 0 || req.HargaPokok < 0 || req.HargaJual <= 0 {
+		return ctx.Response().Json(http.StatusBadRequest, map[string]string{"message": "Data Nama Item, Stok, Harga Pokok, dan Harga Jual tidak boleh kosong/negatif."})
+	}
+
+	// 2. Ambil data barang saat ini (diperlukan untuk history, jika stok berubah)
+	var oldBarang models.DataBarang
+	err := facades.Orm().Query().Where("id = ?", barangID).First(&oldBarang)
+	if err != nil {
+		return ctx.Response().Json(http.StatusNotFound, map[string]string{"message": "Data Barang tidak ditemukan saat update."})
+	}
+
+	// 3. Update data barang (dan cek jika ada perubahan Stok untuk History)
+	newStok := req.Stok
+	stokChange := newStok - oldBarang.Stok
+
+	// Data yang akan diupdate
+	updateData := models.DataBarang{
+		NamaItem:     req.NamaItem,
+		Merk:         req.Merk,
+		Stok:         newStok,
+		HargaPokok:   req.HargaPokok,
+		HargaJual:    req.HargaJual,
+		HargaToko:    req.HargaToko,
+		HargaOrang:   req.HargaOrang,
+		HargaBengkel: req.HargaBengkel,
+		StokMinimal:  req.StokMinimal,
+		StokMaksimal: req.StokMaksimal,
+		Keterangan:   req.Keterangan,
+		UpdatedBy:    user_id,
+		UpdatedAt:    &now,
+	}
+
+	_, errUpdate := facades.Orm().Query().Model(&models.DataBarang{}).Where("id = ?", barangID).Update(updateData)
+
+	if errUpdate != nil {
+		return ctx.Response().Json(http.StatusInternalServerError, map[string]string{"message": "Gagal menyimpan perubahan: " + errUpdate.Error()})
+	}
+
+	// 4. Tambahkan History Stok jika ada perubahan stok
+	if stokChange != 0 {
+		isTambah := stokChange > 0
+		qtyAbs := stokChange
+		if !isTambah {
+			qtyAbs = -stokChange // Ambil nilai absolut positif
+		}
+
+		history := models.DataBarangHistory{
+			KodeBarang:         oldBarang.KodeItem,
+			NamaBarang:         req.NamaItem, // Nama yang baru
+			SourceChangeBarang: "EDIT_FORM",  // Sumber perubahan (misalnya: EDIT_FORM)
+			QtyTambahKurang:    qtyAbs,
+			QtyAwal:            oldBarang.Stok,
+			QtyTerakhir:        newStok,
+			KodeTranksaksi:     "EDIT-" + oldBarang.KodeItem + "-" + time.Now().Format("060102150405"),
+			IsTambah:           isTambah,
+			IsKurang:           !isTambah,
+			IsTranksaksi:       false, // Perubahan manual, bukan transaksi
+			TanggalPerubahan:   &now,
+			CreatedName:        username, // Ganti dengan nama user yang login
+			CreatedBy:          user_id,  // ID user yang login
+		}
+
+		facades.Orm().Query().Create(&history) // Simpan history (Error diabaikan untuk penyederhanaan)
+	}
+
+	return ctx.Response().Json(http.StatusOK, map[string]string{"message": "Data barang berhasil diubah"})
+}
+
+type BarangResponse struct {
+	ID           int    `json:"ID"`
+	KodeItem     string `json:"KodeItem"`
+	NamaItem     string `json:"NamaItem"`
+	Merk         string `json:"Merk"`
+	Stok         int    `json:"Stok"`
+	HargaPokok   int    `json:"HargaPokok"`
+	HargaJual    int    `json:"HargaJual"`
+	StokMinimal  int    `json:"StokMinimal"`
+	StokMaksimal int    `json:"StokMaksimal"`
+	Keterangan   string `json:"Keterangan"`
+	UpdatedAt    string `json:"UpdatedAt"`
+	RowClass     string `json:"RowClass"`
+}
+
+type UpdateBarangRequest struct {
+	NamaItem     string `json:"nama_item"`
+	Merk         string `json:"merk"`
+	Stok         int    `json:"stok"`
+	HargaPokok   int    `json:"harga_pokok"`
+	HargaJual    int    `json:"harga_jual"`
+	HargaToko    int    `json:"harga_toko"`
+	HargaOrang   int    `json:"harga_orang"`
+	HargaBengkel int    `json:"harga_bengkel"`
+	StokMinimal  int    `json:"stok_minimal"`
+	StokMaksimal int    `json:"stok_maksimal"`
+	Keterangan   string `json:"keterangan"`
+	UpdatedBy    int    `json:"updated_by"`
 }

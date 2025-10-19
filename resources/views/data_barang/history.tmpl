@@ -1,0 +1,84 @@
+{{ define "data_barang/history.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+{{ template "layout/head.tmpl" . }}
+
+<body>
+    {{ template "data_barang/_style.tmpl" . }}
+    <div class="wrapper">
+        {{ template "layout/sidebar.tmpl" . }}
+        <div class="main-panel">
+            {{ template "layout/mainheader.tmpl" . }}
+            <div class="container">
+                <div class="page-inner">
+                    <h3 class="fw-bold mb-3">
+                        History Barang: {{ .KodeBarang }} - {{ .NamaBarang }} 
+                    </h3>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Riwayat Perubahan Stok</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="display table table-striped table-hover" id="dataTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>No.</th>
+                                            <th>Kode Barang</th>
+                                            <th>Nama Barang</th>
+                                            <th>Kode Tranksaksi</th>
+                                            <th>Sumber Tranksaksi</th>
+                                            <th>QTY Awal</th>
+                                            <th>QTY Tranksaksi</th>
+                                            <th>QTY Terakhir</th>
+                                            <th>Tanggal Perubahan</th>
+                                            <th>Pramuniaga</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{ range .History }}
+                                        <tr>
+                                            <td>{{ .No }}</td>
+                                            <td>{{ .KodeBarang }}</td>
+                                            <td>{{ .NamaBarang }}</td>
+                                            <td>{{ .KodeTranksaksi }}</td>
+                                            <td>{{ .SourceChangeBarang }}</td>
+                                            <td>{{ .QtyAwal }}</td>
+                                            <td class="{{ .QtyTampilClass }} fw-bold">
+                                                {{ .QtyTranksaksiTampil }}
+                                            </td>
+                                            <td>{{ .QtyTerakhir }}</td>
+                                            <td>{{ .TanggalPerubahan }}</td>
+                                            <td>{{ .CreatedName }}</td>
+                                        </tr>
+                                        {{ end }}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{ template "layout/footer.tmpl" . }}
+        </div>
+    </div>
+    
+    <script src="/assets/js/core/jquery-3.7.1.min.js"></script>
+    <script src="/assets/js/core/popper.min.js"></script>
+    <script src="/assets/js/core/bootstrap.min.js"></script>
+    <script src="/assets/js/plugin/datatables/datatables.min.js"></script>
+    
+    <script>
+        $(document).ready(function () {
+            $('#dataTable').DataTable({
+                "order": [[8, 'desc']], 
+                "pageLength": 10,
+                "responsive": true,
+                "dom": 'rtip',
+            });
+        });
+    </script>
+</body>
+</html>
+{{ end }}

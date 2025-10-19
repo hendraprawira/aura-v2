@@ -19,8 +19,13 @@ func RequireLogin(handler func(ctx http.Context) http.Response) func(ctx http.Co
 
 func Web() {
 	facades.Route().Static("/assets", "./public/assets")
+
+	api := facades.Route().Prefix("api")
+
 	authController := controllers.AuthController{}
 	barangController := controllers.BarangController{}
+	barangHistoryController := controllers.BarangHistoryController{}
+
 	facades.Route().Get("/login", authController.ShowLogin)
 	facades.Route().Post("/login", authController.Login)
 
@@ -40,7 +45,6 @@ func Web() {
 			"menu":        "Dashboard",
 		})
 	})
-	facades.Route().Get("/data-barang", RequireLogin(barangController.Index))
 
 	facades.Route().Get("/logout", func(ctx http.Context) http.Response {
 		ctx.Response().Cookie(http.Cookie{Name: "user_id", Value: "", MaxAge: -1})
@@ -48,6 +52,13 @@ func Web() {
 		ctx.Response().Cookie(http.Cookie{Name: "role", Value: "", MaxAge: -1})
 		return ctx.Response().Redirect(http.StatusFound, "/login")
 	})
-	facades.Route().Get("/api/data-barang", barangController.DatatablesAPI)
+
+	facades.Route().Get("/data-barang", RequireLogin(barangController.Index))
+	api.Put("/data-barang/{id}", barangController.Update)
+	api.Get("/data-barang/{id}/edit", barangController.EditAPI)
+	api.Get("/data-barang/{id}/detail", barangController.DetailAPI)
+	api.Get("/data-barang", barangController.DatatablesAPI)
+
+	facades.Route().Get("/data-barang/history/{id}", barangHistoryController.Index)
 
 }

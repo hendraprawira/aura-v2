@@ -1,0 +1,89 @@
+{{ define "data_barang/_style.tmpl" }}
+<style>
+    /* CSS UNTUK CONTAINER FILTER BARU */
+    div.dataTables_wrapper div.top {
+      text-align: center;
+    }
+
+    /* CSS UNTUK INPUT SEARCH BOX */
+    div.dataTables_wrapper div.dataTables_filter {
+      float: none;
+      display: inline-block;
+      margin: 15px 0;
+    }
+
+    .dataTables_filter input {
+      /* PENTING: Tingkatkan nilai max-width di sini */
+      max-width: 800px !important;
+      /* Contoh: Tingkatkan menjadi 800px */
+      /* ATAU, gunakan persentase untuk responsif yang lebih baik: */
+      /* max-width: 75% !important; */
+
+      width: 100%;
+      font-size: 1.3rem !important;
+      padding: 12px 18px !important;
+      font-weight: bold !important;
+      border-radius: 8px !important;
+    }
+
+    div.dataTables_wrapper div.dataTables_filter input {
+      width: 600px !important;
+      /* Bisa diganti sesuai kebutuhan */
+      max-width: none !important;
+      /* Hilangkan batas maksimal */
+      font-size: 1.1rem !important;
+      padding: 10px 14px !important;
+      border-radius: 8px !important;
+    }
+
+    /* Agar posisi search box tetap di tengah */
+    div.dataTables_wrapper div.dataTables_filter {
+      text-align: center !important;
+      float: none !important;
+    }
+
+    /* -- KONDISI AMAN (HIJAU) -- */
+    #basic-datatables tbody tr.stock-empty td {
+      background-color: #f8f9fa !important;
+      /* Putih/Sangat terang */
+      color: #495057 !important;
+      /* Teks default/abu-abu gelap */
+    }
+
+    /* -- KONDISI PERINGATAN (KUNING SOLID) -- */
+    /* Jika Stok < StokMinimal */
+    #basic-datatables tbody tr.stock-warning td {
+      background-color: #fff3cd !important;
+      /* Kuning muda solid */
+      color: #856404 !important;
+      /* Teks kuning tua */
+    }
+
+    /* -- KONDISI AMAN (HIJAU SOLID) -- */
+    /* Jika Stok > StokMinimal */
+    #basic-datatables tbody tr.stock-safe td {
+      background-color: #d4edda !important;
+      /* Hijau muda solid */
+      color: #155724 !important;
+      /* Teks hijau tua */
+    }
+
+
+    /* -- HILANGKAN EFEK HOVER Bawaan -- */
+    /* Penting untuk mempertahankan warna solid kustom saat kursor di atas baris */
+    #basic-datatables.table-hover tbody tr.stock-empty:hover td {
+      background-color: #f8f9fa !important;
+      /* Pastikan tetap putih saat hover */
+    }
+
+    #basic-datatables.table-hover tbody tr.stock-warning:hover td {
+      background-color: #fff3cd !important;
+      /* Pastikan tetap kuning saat hover */
+    }
+
+    #basic-datatables.table-hover tbody tr.stock-safe:hover td {
+      background-color: #d4edda !important;
+      /* Pastikan tetap hijau saat hover */
+    }
+</style>
+{{ end }}
