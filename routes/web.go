@@ -57,7 +57,12 @@ func Web() {
 	api.Put("/data-barang/{id}", barangController.Update)
 	api.Get("/data-barang/{id}/edit", barangController.EditAPI)
 	api.Get("/data-barang/{id}/detail", barangController.DetailAPI)
+	api.Delete("/data-barang/{id}", barangController.Delete)
 	api.Get("/data-barang", barangController.DatatablesAPI)
+
+	api.Get("/data-barang/search-suggest", barangController.SearchSuggestAPI)
+	api.Post("/data-barang/add-stock", barangController.AddStock)
+	api.Post("/data-barang", barangController.Store)
 
 	facades.Route().Get("/data-barang/history/{id}", barangHistoryController.Index)
 

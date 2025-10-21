@@ -419,7 +419,7 @@
         });
 
         // 3. DELETE BUTTON (SweetAlert Alert)
-        $('#basic-datatables tbody').on('click', '.btn-delete', function () {
+$('#basic-datatables tbody').on('click', '.btn-delete', function () {
             const id = $(this).data('id');
 
             swal({ // <--- Menggunakan swal()
@@ -440,11 +440,422 @@
             }).then((isConfirmed) => { // <--- Menggunakan then()
                 if (isConfirmed) {
                     // Lakukan permintaan AJAX DELETE di sini
-                    swal('Terhapus!', 'Data berhasil dihapus.', 'success');
-                    // dataTable.ajax.reload(null, false);
+                    
+                    // Tampilkan loading SweetAlert
+                    swal({
+                        title: 'Menghapus Data...',
+                        text: "Mohon tunggu",
+                        icon: 'info',
+                        button: false,
+                    });
+
+                    $.ajax({
+                        url: `/api/data-barang/${id}`, // <-- Endpoint DELETE
+                        type: 'DELETE',              // <-- Method DELETE
+                        success: function (response) {
+                            swal("Terhapus!", response.message, "success");
+                            dataTable.ajax.reload(null, false); // Reload datatable
+                        },
+                        error: function (xhr) {
+                            let msg = 'Terjadi kesalahan saat menghapus data.';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                msg = xhr.responseJSON.message;
+                            }
+                            swal("Gagal!", msg, "error");
+                        }
+                    });
                 }
             })
         });
+
+
+        $('#btn-tambah-stock').on('click', function(e) {
+            e.preventDefault();
+
+            const formHtml = `
+                <form id="tambahStockForm" class="text-start">
+                    <input type="hidden" id="barang_id" value="">
+                    <input type="hidden" id="kode_item_selected" value="">
+
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label fw-bold">Cari Barang (Min. 3 Huruf)</label>
+                        <div class="col-sm-7">
+                            <input type="text" id="nama_barang_search" class="form-control" placeholder="Ketik Kode/Nama Barang" required>
+                            <div id="search-results" class="list-group position-absolute w-100" style="z-index: 1050; border: 1px solid #ccc; border-top: none;">
+                                </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group row mt-4">
+                        <label class="col-sm-5 col-form-label fw-bold">Kode Barang</label>
+                        <div class="col-sm-7">
+                            <input type="text" id="kode_item_display" class="form-control" readonly style="background-color: #f0f0f0;">
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label fw-bold">Stock Saat Ini</label>
+                        <div class="col-sm-7">
+                            <input type="number" id="stok_saat_ini" class="form-control" readonly style="background-color: #f0f0f0;">
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label fw-bold">Stok yang Ditambah</label>
+                        <div class="col-sm-7">
+                            <input type="number" id="qty_tambah" class="form-control" value="1" min="1" required>
+                        </div>
+                    </div>
+                </form>
+            `;
+
+            swal({
+                title: `Tambah Stok Barang`,
+                content: {
+                    element: "div",
+                    attributes: {
+                        innerHTML: formHtml,
+                        style: "text-align: left;",
+                    },
+                },
+                buttons: {
+                    cancel: {
+                        text: 'Batal',
+                        visible: true,
+                        className: 'btn btn-danger',
+                    },
+                    confirm: {
+                        text: 'Simpan Stok',
+                        className: 'btn btn-success',
+                        // Jika menggunakan SweetAlert 1.x, tidak perlu closeModal di sini, 
+                        // karena di-handle oleh closeOnConfirm: false di bawah.
+                    }
+                },
+                // Gunakan closeOnConfirm: false agar kita bisa handle SweetAlert secara manual
+                closeOnConfirm: false, 
+                
+                // SweetAlert 1.x tidak memiliki onOpen resmi. 
+                // Kita harus menggunakan setTimeout atau memanfaatkan struktur DOM setelah swal muncul.
+                
+            });
+
+            // Setelah swal dipanggil, elemen-elemen form sudah ada di DOM.
+            // Kita gunakan DOM manipulation di luar call swal().
+            setTimeout(() => {
+                const searchInput = $('#nama_barang_search');
+                const resultsContainer = $('#search-results');
+                let searchTimeout = null;
+
+                // Fungsi untuk merender suggestion
+                const renderSuggestions = (data) => {
+                    resultsContainer.empty();
+                    if (data.length > 0) {
+                        data.forEach(item => {
+                            const itemHtml = `
+                                <a href="#" class="list-group-item list-group-item-action item-suggestion" 
+                                   data-id="${item.ID}" 
+                                   data-kode="${item.KodeItem}" 
+                                   data-stok="${item.Stok}"
+                                   data-nama="${item.NamaItem} (${item.KodeItem})">
+                                    ${item.NamaItem} <small class="text-muted">(${item.KodeItem}) - Stok: ${item.Stok}</small>
+                                </a>
+                            `;
+                            resultsContainer.append(itemHtml);
+                        });
+                        resultsContainer.show();
+                    } else {
+                        resultsContainer.hide();
+                    }
+                };
+
+                // 1. Event: Mengetik di field pencarian (Listener yang memicu AJAX GET)
+                searchInput.off('keyup').on('keyup', function() {
+                    clearTimeout(searchTimeout);
+                    const query = $(this).val();
+
+                    if (query.length < 3) {
+                        resultsContainer.empty().hide();
+                        return;
+                    }
+
+                    // Debounce: Tunggu 300ms sebelum kirim AJAX
+                    searchTimeout = setTimeout(function() {
+                        const url = `/api/data-barang/search-suggest?q=${query}`;
+                        
+                        // LOG PENTING: Cek URL yang seharusnya dipanggil
+                        console.log("AJAX GET URL:", url); 
+
+                        $.ajax({
+                            url: url,
+                            type: 'GET',
+                            success: function(response) {
+                                console.log("AJAX GET Success:", response);
+                                renderSuggestions(response.data || []);
+                            },
+                            error: function(xhr) {
+                                console.error("AJAX GET Error:", xhr.status, xhr.responseText);
+                                resultsContainer.empty().hide();
+                            }
+                        });
+                    }, 50);
+                });
+
+                // 2. Event: Memilih Suggestion (mengisi form)
+                // Menggunakan event delegation di dalam modal SweetAlert
+                // Kita bind ke body atau ke wrapper SweetAlert yang sudah ada
+                $('body').off('click', '.item-suggestion').on('click', '.item-suggestion', function(e) {
+                    e.preventDefault();
+                    
+                    // Pastikan kita hanya bereaksi pada suggestion di modal aktif
+                    if ($(this).closest('.swal-modal').length === 0) {
+                        return;
+                    }
+                    
+                    const id = $(this).data('id');
+                    const kode = $(this).data('kode');
+                    const stok = $(this).data('stok');
+                    const nama = $(this).data('nama');
+
+                    // Isi field tersembunyi dan tampilan
+                    $('#barang_id').val(id);
+                    $('#kode_item_selected').val(kode);
+                    $('#nama_barang_search').val(nama);
+                    $('#kode_item_display').val(kode);
+                    $('#stok_saat_ini').val(stok);
+
+                    // Sembunyikan hasil pencarian
+                    resultsContainer.empty().hide();
+                });
+
+                // 3. Event: Klik di luar suggestion box (untuk menutup)
+                $(document).off('click.closeSuggest').on('click.closeSuggest', function(e) {
+                    if (!$(e.target).closest('#nama_barang_search').length && !$(e.target).closest('#search-results').length) {
+                        resultsContainer.hide();
+                    }
+                });
+
+                // Set fokus ke input barang setelah pop-up muncul
+                searchInput.focus();
+
+            }, 50); // Delay kecil untuk memastikan modal SweetAlert selesai di-render
+
+
+            // MENGAMBIL RESULT DARI SWEETALERT PROMISE (.then)
+            $('.swal-button--confirm').off('click').on('click', function() {
+                // Lakukan validasi dan AJAX POST di sini
+                const barangID = parseInt($('#barang_id').val());
+                const qtyTambah = parseInt($('#qty_tambah').val());
+
+                if (!barangID) {
+                    swal("Gagal!", "Pilih barang dari daftar suggestion terlebih dahulu.", "error");
+                    return;
+                }
+                if (qtyTambah <= 0 || isNaN(qtyTambah)) {
+                    swal("Gagal!", "Jumlah stok yang ditambah harus lebih dari 0.", "error");
+                    return;
+                }
+
+                // Tampilkan loading SweetAlert baru sebelum AJAX POST
+                swal({
+                    title: 'Menyimpan Stok...',
+                    text: "Mohon tunggu",
+                    icon: 'info',
+                    button: false,
+                });
+
+                // Kirim AJAX POST
+                const stockData = {
+                    barang_id: barangID,
+                    qty_tambah: qtyTambah,
+                    updated_by: 1, 
+                };
+                
+                const postUrl = '/api/data-barang/add-stock';
+                console.log("AJAX POST URL:", postUrl, "Data:", stockData); // LOG PENTING: Cek payload
+
+                $.ajax({
+                    url: postUrl,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(stockData),
+                    success: function (response) {
+                        swal("Berhasil!", response.message, "success");
+                        dataTable.ajax.reload(null, false);
+                    },
+                    error: function (xhr) {
+                        let msg = 'Terjadi kesalahan saat menyimpan stok.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            msg = xhr.responseJSON.message;
+                        }
+                        swal("Gagal!", msg, "error");
+                    }
+                });
+            });
+
+            // Handle tombol batal (opsional, karena SweetAlert 1.x handle sendiri)
+            // Namun, kita tetap perlu menutup modal secara manual karena closeOnConfirm: false
+            $('.swal-button--cancel').off('click').on('click', function() {
+                swal.close();
+            });
+        });
+
+        $('#btn-tambah-barang').on('click', function(e) {
+            e.preventDefault();
+
+            const formHtml = `
+                <form id="createBarangForm" class="text-start">
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Kode Barang <span class="text-danger">*</span></label>
+                        <div class="col-sm-7"><input type="text" id="kode_item" class="form-control" required></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Nama Barang <span class="text-danger">*</span></label>
+                        <div class="col-sm-7"><input type="text" id="nama_item" class="form-control" required></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Merk</label>
+                        <div class="col-sm-7"><input type="text" id="merk" class="form-control"></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Satuan</label>
+                        <div class="col-sm-7"><input type="text" id="satuan" class="form-control" placeholder="Contoh: PCS, DUS"></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Rak/Lokasi</label>
+                        <div class="col-sm-7"><input type="text" id="rak" class="form-control"></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Stock Awal <span class="text-danger">*</span></label>
+                        <div class="col-sm-7"><input type="number" id="stok" class="form-control" value="0" min="0" required></div>
+                    </div>
+                    <hr>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Harga Pokok <span class="text-danger">*</span></label>
+                        <div class="col-sm-7"><input type="number" id="harga_pokok" class="form-control" value="0" min="0" required></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Harga Jual Ecer <span class="text-danger">*</span></label>
+                        <div class="col-sm-7"><input type="number" id="harga_jual" class="form-control" value="0" min="0" required></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Harga Perorangan Bengkel</label>
+                        <div class="col-sm-7"><input type="number" id="harga_orang" class="form-control" value="0" min="0"></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Harga Bengkel Menengah</label>
+                        <div class="col-sm-7"><input type="number" id="harga_toko" class="form-control" value="0" min="0"></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Harga Toko</label>
+                        <div class="col-sm-7"><input type="number" id="harga_bengkel" class="form-control" value="0" min="0"></div>
+                    </div>
+                    <hr>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Stok Minimal</label>
+                        <div class="col-sm-7"><input type="number" id="stok_minimal" class="form-control" value="0" min="0"></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Stok Maksimal</label>
+                        <div class="col-sm-7"><input type="number" id="stok_maksimal" class="form-control" value="0" min="0"></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Kode Barcode</label>
+                        <div class="col-sm-7"><input type="text" id="kode_barcode" class="form-control"></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">SKU Barang</label>
+                        <div class="col-sm-7"><input type="text" id="sku_barang" class="form-control"></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Keterangan</label>
+                        <div class="col-sm-7"><textarea id="keterangan" class="form-control"></textarea></div>
+                    </div>
+                </form>
+            `;
+
+            swal({
+                title: `Tambah Barang Baru`,
+                content: {
+                    element: "div",
+                    attributes: {
+                        innerHTML: formHtml,
+                        // Agar form bisa discroll karena panjang
+                        style: "text-align: left; max-height: 400px; overflow-y: auto;", 
+                    },
+                },
+                buttons: {
+                    cancel: {
+                        text: 'Batal',
+                        visible: true,
+                        className: 'btn btn-danger',
+                    },
+                    confirm: {
+                        text: 'Simpan Barang',
+                        className: 'btn btn-primary',
+                    }
+                },
+                closeOnConfirm: false,
+            }).then((isConfirmed) => {
+                if (isConfirmed) {
+                    
+                    // 1. Ambil data dari form
+                    const newBarangData = {
+                        kode_item: $('#createBarangForm #kode_item').val(),
+                        nama_item: $('#createBarangForm #nama_item').val(),
+                        merk: $('#createBarangForm #merk').val(),
+                        satuan: $('#createBarangForm #satuan').val(),
+                        rak: $('#createBarangForm #rak').val(),
+                        stok: parseInt($('#createBarangForm #stok').val()) || 0,
+                        harga_pokok: parseInt($('#createBarangForm #harga_pokok').val()) || 0,
+                        harga_jual: parseInt($('#createBarangForm #harga_jual').val()) || 0,
+                        harga_toko: parseInt($('#createBarangForm #harga_toko').val()) || 0,
+                        harga_orang: parseInt($('#createBarangForm #harga_orang').val()) || 0,
+                        harga_bengkel: parseInt($('#createBarangForm #harga_bengkel').val()) || 0,
+                        stok_minimal: parseInt($('#createBarangForm #stok_minimal').val()) || 0,
+                        stok_maksimal: parseInt($('#createBarangForm #stok_maksimal').val()) || 0,
+                        kode_barcode: $('#createBarangForm #kode_barcode').val(),
+                        sku_barang: $('#createBarangForm #sku_barang').val(),
+                        keterangan: $('#createBarangForm #keterangan').val(),
+                        created_by: 1, // Ganti dengan ID user yang sebenarnya
+                    };
+
+                    // 2. Validasi Kunci
+                    if (!newBarangData.kode_item || !newBarangData.nama_item || newBarangData.harga_jual <= 0) {
+                        swal("Gagal!", "Kode Barang, Nama Barang, dan Harga Jual wajib diisi.", "error");
+                        return;
+                    }
+
+                    // Tampilkan loading SweetAlert
+                    swal({
+                        title: 'Menyimpan Data...',
+                        text: "Mohon tunggu",
+                        icon: 'info',
+                        button: false,
+                    });
+
+                    // 3. Kirim AJAX POST
+                    $.ajax({
+                        url: '/api/data-barang', // <-- Endpoint POST baru
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(newBarangData),
+                        success: function (response) {
+                            swal("Berhasil!", response.message, "success");
+                            dataTable.ajax.reload(null, false); // Reload datatable
+                        },
+                        error: function (xhr) {
+                            let msg = 'Terjadi kesalahan saat menyimpan data.';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                msg = xhr.responseJSON.message;
+                            }
+                            swal("Gagal!", msg, "error");
+                        }
+                    });
+                }
+            });
+        });
+
+
     });
 </script>
 {{ end }}
