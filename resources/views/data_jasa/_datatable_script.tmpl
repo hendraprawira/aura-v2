@@ -1,0 +1,265 @@
+{{ define "data_jasa/_datatable_script.tmpl" }}
+<script src="/assets/js/core/jquery-3.7.1.min.js"></script>
+<script src="/assets/js/core/popper.min.js"></script>
+<script src="/assets/js/core/bootstrap.min.js"></script>
+<script src="/assets/js/plugin/datatables/datatables.min.js"></script>
+<script src="/assets/js/plugin/sweetalert/sweetalert.min.js"></script>
+<script>
+    function formatRupiah(angka) {
+        // ... (kode formatRupiah yang sudah ada) ...
+        if (angka === null || angka === undefined) {
+            return 'Rp. 0';
+        }
+        let numberString = angka.toString().replace(/[^,\d]/g, '');
+        let split = numberString.split(',');
+        let sisa = split[0].length % 3;
+        let rupiah = split[0].substr(0, sisa);
+        let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+        if (ribuan) {
+            let separator = sisa ? '.' : '';
+            rupiah += separator + ribuan.join('.');
+        }
+        rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
+        return 'Rp. ' + rupiah;
+    }
+
+    function getIntValue(selector) {
+        // ... (kode getIntValue yang sudah ada) ...
+        let value = $(selector).val();
+        if (value === null || value === undefined || value.trim() === '') {
+            return 0;
+        }
+        // Hapus pemisah ribuan (titik) sebelum parseInt, jika ada
+        value = value.replace(/\./g, '');
+        return parseInt(value) || 0;
+    }
+
+    $(document).ready(function () {
+        // Inisialisasi DataTables
+        const dataTable = $("#basic-datatables").DataTable({
+            "processing": true,
+            "serverSide": true,
+            "responsive": true,
+            "dom": '<"top"f><"clear">lrtip',
+            "ajax": {
+                "url": "/api/data-jasa",
+                "type": "GET",
+            },
+            "language": {
+                // ... (konfigurasi bahasa yang sudah ada) ...
+                "processing": "DATA TIDAK ADA, CEK KETIKAN ANDA",
+                "zeroRecords": "Data Tidak Ada",
+                "emptyTable": "Tidak ada data yang tersedia pada tabel ini.",
+                "search": "Cari Cepat:",
+                "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                "infoEmpty": "Menampilkan 0 sampai 0 dari 0 entri",
+                "infoFiltered": "(difilter dari _MAX_ total entri)",
+                "lengthMenu": "Tampilkan _MENU_ entri",
+                "paginate": {
+                    "first": "Awal",
+                    "last": "Akhir",
+                    "next": "Lanjut",
+                    "previous": "Sebelum"
+                }
+            },
+            // Urutan harus sesuai dengan header tabel dan data JSON dari Goravel
+            "columns": [{
+                    "data": null,
+                    "orderable": false,
+                    "render": function (data, type, row, meta) {
+                        return meta.row + meta.settings._iDisplayStart + 1;
+                    }
+                }, // No Urut
+                {
+                    "data": "kode_jasa"
+                },
+                {
+                    "data": "nama_jasa"
+                },
+                {
+                    "data": "harga_jasa",
+                    "render": function (data) {
+                        return formatRupiah(data);
+                    }
+                },
+                {
+                    "data": "harga_toko",
+                      "render": function (data) {
+                        return formatRupiah(data);
+                    }
+                },
+                {
+                    "data": "harga_mekanik",
+                      "render": function (data) {
+                        return formatRupiah(data);
+                    }
+                },
+                {
+                    "data": "keterangan"
+                },
+                {
+                    "data": null,
+                    "orderable": false,
+                    "render": function (data, type, row) {
+                        return `
+                            <div class="form-button-action">
+                                <button type="button" data-id="${row.id}" title="Edit Data"class="btn btn-sm btn-primary btn-round btn-icon btn-edit me-1" >
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button type="button" data-id="${row.id}" title="Hapus Data" class="btn btn-sm btn-danger btn-round btn-icon btn-delete me-1">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                } // Kolom Aksi
+            ],
+            "order": [
+                [0, 'desc']
+            ],
+        });
+
+        const jasaModal = new bootstrap.Modal(document.getElementById('jasaModal'));
+        const form = $('#jasaForm');
+
+        // 1. TAMBAH JASA (Buka Modal)
+        $('#btn-tambah-barang').on('click', function (e) {
+            e.preventDefault();
+            $('#modalTitle').text('Tambah Data Jasa');
+            $('#jasa_id').val(''); // Kosongkan ID
+            form[0].reset(); // Reset form
+            form.attr('data-mode', 'create');
+            jasaModal.show();
+        });
+
+        // 2. EDIT JASA (Buka Modal, Isi Data)
+        $('#basic-datatables tbody').on('click', '.btn-edit', function () {
+            const id = $(this).data('id');
+            $('#modalTitle').text('Edit Data Jasa');
+            form.attr('data-mode', 'edit');
+            form.attr('data-id', id);
+
+            // Ambil data dari API Show
+            $.ajax({
+                url: `/api/data-jasa/${id}`, // Endpoint JasaController.Show
+                type: 'GET',
+                success: function (response) {
+                    $('#jasa_id').val(response.id);
+                    $('#kode_jasa').val(response.kode_jasa);
+                    $('#nama_jasa').val(response.nama_jasa);
+                    $('#harga_jasa').val(response.harga_jasa);
+                    $('#harga_toko').val(response.harga_toko);
+                    $('#harga_mekanik').val(response.harga_mekanik);
+                    $('#keterangan').val(response.keterangan);
+                    jasaModal.show();
+                },
+                error: function (xhr) {
+                    swal('Error', 'Gagal mengambil data: ' + (xhr.responseJSON ? xhr
+                        .responseJSON.message : xhr.statusText), 'error');
+                }
+            });
+        });
+
+        // 3. SIMPAN/UPDATE DATA (Submit Form)
+        form.on('submit', function (e) {
+            e.preventDefault();
+            const mode = form.attr('data-mode');
+            const id = form.attr('data-id');
+            let url = '/api/data-jasa'; // Untuk Create
+            let type = 'POST';
+            let message = 'ditambahkan';
+
+            // Jika mode Edit
+            if (mode === 'edit') {
+                url = `/api/data-jasa/${id}`; // Endpoint JasaController.Update
+                type = 'PUT';
+                message = 'diperbarui';
+            }
+
+            // Ambil data form
+            const formData = {
+                kode_jasa: $('#kode_jasa').val(),
+                nama_jasa: $('#nama_jasa').val(),
+                // Pastikan harga_jasa diubah ke integer sesuai DTO
+                harga_jasa: parseInt($('#harga_jasa').val()),
+                harga_toko: $('#harga_toko').val(),
+                harga_mekanik: $('#harga_mekanik').val(),
+                keterangan: $('#keterangan').val(),
+            };
+
+            $.ajax({
+                url: url,
+                type: type,
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    jasaModal.hide();
+                    swal('Sukses!', `Data jasa berhasil ${message}.`, 'success');
+                    dataTable.ajax.reload(); // Reload DataTables
+                },
+                error: function (xhr) {
+                    let errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.status === 422) {
+                        errorMessage =
+                            "Validasi gagal. Pastikan semua kolom yang wajib diisi sudah terisi dengan benar.";
+                    }
+                    swal('Error', errorMessage, 'error');
+                }
+            });
+        });
+
+        // 4. HAPUS DATA (SweetAlert Confirmation - Versi 1)
+        // 4. HAPUS DATA (SweetAlert Confirmation - Versi 1)
+        $('#basic-datatables tbody').on('click', '.btn-delete', function () {
+            const id = $(this).data('id');
+
+            swal({ // <--- Menggunakan swal()
+                title: 'Apakah Anda yakin?',
+                text: "Data ini akan dihapus secara permanen!",
+                icon: 'warning',
+                buttons: {
+                    cancel: {
+                        text: 'Batal',
+                        visible: true,
+                        className: 'btn btn-secondary',
+                    },
+                    confirm: {
+                        text: 'Ya, Hapus!',
+                        className: 'btn btn-danger',
+                    }
+                },
+            }).then((isConfirmed) => { // <--- Menggunakan then()
+                if (isConfirmed) {
+                    // Lakukan permintaan AJAX DELETE di sini
+
+                    // Tampilkan loading SweetAlert
+                    swal({
+                        title: 'Menghapus Data...',
+                        text: "Mohon tunggu",
+                        icon: 'info',
+                        button: false,
+                    });
+
+                    $.ajax({
+                        url: `/api/data-jasa/${id}`, // <-- Endpoint DELETE
+                        type: 'DELETE', // <-- Method DELETE
+                        success: function (response) {
+                            swal("Terhapus!", response.message, "success");
+                            dataTable.ajax.reload(null, false); // Reload datatable
+                        },
+                        error: function (xhr) {
+                            let msg = 'Terjadi kesalahan saat menghapus data.';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                msg = xhr.responseJSON.message;
+                            }
+                            swal("Gagal!", msg, "error");
+                        }
+                    });
+                }
+            })
+        });
+    });
+</script>
+{{ end }}

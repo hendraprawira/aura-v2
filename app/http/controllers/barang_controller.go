@@ -15,7 +15,19 @@ import (
 type BarangController struct{}
 
 func (b *BarangController) Index(ctx http.Context) http.Response {
-	return ctx.Response().View().Make("data_barang/index.tmpl")
+
+	username := ctx.Request().Cookie("username")
+	role := ctx.Request().Cookie("role")
+	if username == "" {
+		return ctx.Response().Redirect(http.StatusFound, "/login")
+	}
+	return ctx.Response().View().Make("data_barang/index.tmpl", map[string]any{
+		"username":    username,
+		"role":        role,
+		"activeGroup": "master-data",
+		"activeMenu":  "data-barang",
+		"menu":        "Data Barang",
+	})
 }
 
 func (a *BarangController) DatatablesAPI(ctx http.Context) http.Response {

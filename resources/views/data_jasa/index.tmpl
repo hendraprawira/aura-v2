@@ -1,0 +1,110 @@
+{{ define "data_jasa/index.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+{{ template "layout/head.tmpl" . }}
+
+<body>
+  {{ template "data_jasa/_style.tmpl" . }}
+  <div class="wrapper">
+    {{ template "layout/sidebar.tmpl" . }}
+    <div class="main-panel">
+      {{ template "layout/mainheader.tmpl" . }}
+      <div class="container">
+        <div class="page-inner">
+          <h3 class="fw-bold mb-3">{{.menu}}</h3>
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div class="ms-md-auto py-2 py-md-0">
+                <a href="#" id="btn-tambah-barang" class="btn btn-primary btn-round">Tambah Jasa</a>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table id="basic-datatables" class="display table table-striped table-hover">
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th>Kode Jasa</th>
+                      <th>Nama Jasa</th>
+                      <th>Harga Jasa</th>
+                      <th>Harga Toko</th>
+                      <th>Harga Mekanik</th>
+                      <th>Keterangan</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {{ template "layout/footer.tmpl" . }}
+    </div>
+  </div>
+  <!-- JS -->
+  {{ template "data_jasa/_datatable_script.tmpl" . }}
+</body>
+</html>
+<div class="modal fade" id="jasaModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <span class="fw-mediumbold" id="modalTitle">Tambah Data Jasa</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="jasaForm">
+                <div class="modal-body">
+                    <input type="hidden" id="jasa_id" name="id">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group form-group-default">
+                                <label>Kode Jasa <span class="text-danger">*</span></label>
+                                <input id="kode_jasa" name="kode_jasa" type="text" class="form-control" placeholder="Masukkan Kode Jasa" required>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group form-group-default">
+                                <label>Nama Jasa <span class="text-danger">*</span></label>
+                                <input id="nama_jasa" name="nama_jasa" type="text" class="form-control" placeholder="Masukkan Nama Jasa" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6 pr-0">
+                            <div class="form-group form-group-default">
+                                <label>Harga Jasa <span class="text-danger">*</span></label>
+                                <input id="harga_jasa" name="harga_jasa" type="number" class="form-control" placeholder="Harga Jasa (Angka)" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-group-default">
+                                <label>Harga Toko</label>
+                                <input id="harga_toko" name="harga_toko" type="text" class="form-control" placeholder="Harga Toko">
+                            </div>
+                        </div>
+                        <div class="col-md-6 pr-0">
+                            <div class="form-group form-group-default">
+                                <label>Harga Mekanik</label>
+                                <input id="harga_mekanik" name="harga_mekanik" type="text" class="form-control" placeholder="Harga Mekanik">
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group form-group-default">
+                                <label>Keterangan</label>
+                                <textarea id="keterangan" name="keterangan" class="form-control" rows="3" placeholder="Keterangan Tambahan"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" id="submitBtn" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{{ end }}
