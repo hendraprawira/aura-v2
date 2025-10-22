@@ -26,6 +26,7 @@ func Web() {
 	barangController := controllers.BarangController{}
 	barangHistoryController := controllers.BarangHistoryController{}
 	jasaController := controllers.JasaController{}
+	jasaServicesController := controllers.JasaServicesController{}
 
 	facades.Route().Get("/login", authController.ShowLogin)
 	facades.Route().Post("/login", authController.Login)
@@ -73,5 +74,7 @@ func Web() {
 	api.Get("/data-jasa/{jasa}", jasaController.Show)
 	api.Put("/data-jasa/{jasa}", jasaController.Update)
 	api.Delete("/data-jasa/{jasa}", jasaController.Destroy)
+
+	facades.Route().Get("/jasa-services", RequireLogin(jasaServicesController.Index))
 
 }

@@ -28,7 +28,6 @@ type JasaDTO struct {
 type JasaController struct{}
 
 func (b *JasaController) Index(ctx http.Context) http.Response {
-
 	username := ctx.Request().Cookie("username")
 	role := ctx.Request().Cookie("role")
 	if username == "" {
