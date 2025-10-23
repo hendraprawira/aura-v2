@@ -15,9 +15,9 @@ type DataJasa struct {
 	HargaToko    string `gorm:"column:harga_toko" json:"harga_toko"`
 	HargaMekanik string `gorm:"column:harga_mekanik" json:"harga_mekanik"`
 	Keterangan   string `gorm:"column:keterangan" json:"keterangan"`
-	CreatedBy    uint   `gorm:"column:created_by" json:"created_by"`
-	UpdatedBy    uint   `gorm:"column:updated_by" json:"updated_by"`
-	DeletedBy    uint   `gorm:"column:deleted_by" json:"deleted_by"`
+	CreatedBy    int    `gorm:"column:created_by" json:"created_by"`
+	UpdatedBy    int    `gorm:"column:updated_by" json:"updated_by"`
+	DeletedBy    int    `gorm:"column:deleted_by" json:"deleted_by"`
 	IsDeleted    bool   `gorm:"column:is_deleted" json:"is_deleted"`
 }
 

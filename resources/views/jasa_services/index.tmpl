@@ -2,207 +2,138 @@
 <!DOCTYPE html>
 <html lang="en">
 {{ template "layout/head.tmpl" . }}
+
 <body>
+
+  <style>
+    body {
+      background-color: #f8f9fc;
+      font-family: "Nunito", sans-serif;
+    }
+
+    .card-service {
+      border-left: 6px solid #0073ff;
+      /* warna kuning di kiri */
+      transition: all 0.2s ease-in-out;
+      min-height: 150px;
+      background-color: #fff;
+    }
+
+    .card-service:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .text-gray-800 {
+      color: #5a5c69 !important;
+    }
+
+    .text-warning {
+      color: #f6c23e !important;
+    }
+
+    .fw-bold {
+      font-weight: 700 !important;
+    }
+
+    .h4 {
+      font-size: 1.5rem !important;
+    }
+
+    .h5 {
+      font-size: 1.25rem !important;
+    }
+
+    .h6 {
+      font-size: 1.1rem !important;
+    }
+
+    .badge {
+      font-size: 0.9rem;
+    }
+    
+  </style>
   <div class="wrapper">
     {{ template "layout/sidebar.tmpl" . }}
     <div class="main-panel">
       {{ template "layout/mainheader.tmpl" . }}
       <div class="container">
-          <div class="page-inner">
-            <!-- Card -->
-            <h3 class="fw-bold mb-3">Card</h3>
-            <div class="row">
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-primary card-round">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-5">
-                        <div class="icon-big text-center">
-                          <i class="fas fa-users"></i>
-                        </div>
-                      </div>
-                      <div class="col-7 col-stats">
-                        <div class="numbers">
-                          <p class="card-category">Visitors</p>
-                          <h4 class="card-title">1,294</h4>
-                        </div>
+        <div class="page-inner">
+          <!-- Card -->
+          <h3 class="fw-bold mb-3">Jasa Services {{.jam}}</h3>
+          <div class="row">
+            <div class="col-sm-6 col-md-3">
+              <div class="card card-stats card-primary card-round">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-5">
+                      <div class="icon-big text-center">
+                        <i class="fas fa-users"></i>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-info card-round">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-5">
-                        <div class="icon-big text-center">
-                          <i class="fas fa-user-check"></i>
-                        </div>
-                      </div>
-                      <div class="col-7 col-stats">
-                        <div class="numbers">
-                          <p class="card-category">Subscribers</p>
-                          <h4 class="card-title">1303</h4>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-success card-round">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-5">
-                        <div class="icon-big text-center">
-                          <i class="fas fa-chart-pie"></i>
-                        </div>
-                      </div>
-                      <div class="col-7 col-stats">
-                        <div class="numbers">
-                          <p class="card-category">Sales</p>
-                          <h4 class="card-title">$ 1,345</h4>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-secondary card-round">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-5">
-                        <div class="icon-big text-center">
-                          <i class="far fa-check-circle"></i>
-                        </div>
-                      </div>
-                      <div class="col-7 col-stats">
-                        <div class="numbers">
-                          <p class="card-category">Order</p>
-                          <h4 class="card-title">576</h4>
-                        </div>
+                    <div class="col-7 col-stats">
+                      <div class="numbers">
+                        <p class="card-category">Services Dalam Proses</p>
+                        <h4 class="card-title">1,294</h4>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-
-            <div class="row">
-              <div class="col-12 col-sm-6 col-md-6 col-xl-3">
-                <div class="card">
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                      <div>
-                        <h5><b>Todays Income</b></h5>
-                        <p class="text-muted">All Customs Value</p>
+            <div class="col-sm-6 col-md-3">
+              <div class="card card-stats card-info card-round">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-5">
+                      <div class="icon-big text-center">
+                        <i class="fas fa-user-check"></i>
                       </div>
-                      <h3 class="text-info fw-bold">$170</h3>
                     </div>
-                    <div class="progress progress-sm">
-                      <div
-                        class="progress-bar bg-info w-75"
-                        role="progressbar"
-                        aria-valuenow="75"
-                        aria-valuemin="0"
-                        aria-valuemax="100"
-                      ></div>
-                    </div>
-                    <div class="d-flex justify-content-between mt-2">
-                      <p class="text-muted mb-0">Change</p>
-                      <p class="text-muted mb-0">75%</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-12 col-sm-6 col-md-6 col-xl-3">
-                <div class="card">
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                      <div>
-                        <h5><b>Total Revenue</b></h5>
-                        <p class="text-muted">All Customs Value</p>
+                    <div class="col-7 col-stats">
+                      <div class="numbers">
+                        <p class="card-category">Services Sudah Selesai</p>
+                        <h4 class="card-title">1303</h4>
                       </div>
-                      <h3 class="text-success fw-bold">$120</h3>
-                    </div>
-                    <div class="progress progress-sm">
-                      <div
-                        class="progress-bar bg-success w-25"
-                        role="progressbar"
-                        aria-valuenow="25"
-                        aria-valuemin="0"
-                        aria-valuemax="100"
-                      ></div>
-                    </div>
-                    <div class="d-flex justify-content-between mt-2">
-                      <p class="text-muted mb-0">Change</p>
-                      <p class="text-muted mb-0">25%</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-12 col-sm-6 col-md-6 col-xl-3">
-                <div class="card">
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                      <div>
-                        <h5><b>New Orders</b></h5>
-                        <p class="text-muted">Fresh Order Amount</p>
-                      </div>
-                      <h3 class="text-danger fw-bold">15</h3>
-                    </div>
-                    <div class="progress progress-sm">
-                      <div
-                        class="progress-bar bg-danger w-50"
-                        role="progressbar"
-                        aria-valuenow="50"
-                        aria-valuemin="0"
-                        aria-valuemax="100"
-                      ></div>
-                    </div>
-                    <div class="d-flex justify-content-between mt-2">
-                      <p class="text-muted mb-0">Change</p>
-                      <p class="text-muted mb-0">50%</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-12 col-sm-6 col-md-6 col-xl-3">
-                <div class="card">
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                      <div>
-                        <h5><b>New Users</b></h5>
-                        <p class="text-muted">Joined New User</p>
-                      </div>
-                      <h3 class="text-secondary fw-bold">12</h3>
-                    </div>
-                    <div class="progress progress-sm">
-                      <div
-                        class="progress-bar bg-secondary w-25"
-                        role="progressbar"
-                        aria-valuenow="25"
-                        aria-valuemin="0"
-                        aria-valuemax="100"
-                      ></div>
-                    </div>
-                    <div class="d-flex justify-content-between mt-2">
-                      <p class="text-muted mb-0">Change</p>
-                      <p class="text-muted mb-0">25%</p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          <div class="row">
+            <!-- Contoh Card -->
+            {{ range .ServiceList }}
+            <div class="col-xl-3 col-md-4 mb-4">
+              <a href="#" class="text-decoration-none">
+                <div class="card card-service shadow h-100 py-2">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col me-2">
+                        <div class="h6 mb-1 fw-bold text-gray-800">{{ .KodeServices }}</div>
+                        <div class="h4 fw-bold text-info text-uppercase mb-1">{{ .NoPolisi }}</div>
+                        <div class="h5 mb-1 fw-bold text-gray-800">{{ .TypeMotor }}</div>
+                        <div class="h6 mb-1 fw-bold text-gray-800">Mekanik:</div>
+                        <div class="h6 mb-0 fw-bold text-gray-800">{{ .CreatedAt.Format "02-01-2006 15:04" }}</div>
+                      </div>
+                      <div class="col-auto text-end">
+                        <span class="badge bg-info text-white px-3 py-2">{{ .StatusServices }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+            {{ end }}
+          </div>
         </div>
+      </div>
       {{ template "layout/footer.tmpl" . }}
     </div>
   </div>
   <!-- JS -->
   {{ template "jasa_services/_datatable_script.tmpl" . }}
 </body>
+
 </html>
 {{ end }}
