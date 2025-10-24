@@ -3,7 +3,6 @@ package controllers
 import (
 	"aura/app/models"
 	"fmt"
-	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -14,13 +13,16 @@ import (
 
 type BarangController struct{}
 
+// Views
 func (b *BarangController) Index(ctx http.Context) http.Response {
 
 	username := ctx.Request().Cookie("username")
 	role := ctx.Request().Cookie("role")
+
 	if username == "" {
 		return ctx.Response().Redirect(http.StatusFound, "/login")
 	}
+
 	return ctx.Response().View().Make("data_barang/index.tmpl", map[string]any{
 		"username":    username,
 		"role":        role,
@@ -33,29 +35,28 @@ func (b *BarangController) Index(ctx http.Context) http.Response {
 func (a *BarangController) DatatablesAPI(ctx http.Context) http.Response {
 	request := ctx.Request()
 	draw, _ := strconv.Atoi(request.Query("draw"))
-	start, _ := strconv.Atoi(request.Query("start"))   // offset
-	length, _ := strconv.Atoi(request.Query("length")) // limit/records per page
+	start, _ := strconv.Atoi(request.Query("start"))
+	length, _ := strconv.Atoi(request.Query("length"))
 	searchVal := request.Query("search[value]")
 
-	// 2. Tentukan Kolom Sorting
 	orderByColIndex, _ := strconv.Atoi(request.Query("order[0][column]"))
 	orderDir := request.Query("order[0][dir]") // asc/desc
 
 	// Sesuaikan nama kolom DB berdasarkan indeks kolom Datatables
 	// HATI-HATI: Urutan ini harus sama persis dengan urutan columns di JS Datatables
 	columnNames := []string{
-		"",              // 0. No (tidak di-sort)
-		"kode_item",     // 1. Kode Barang
-		"nama_item",     // 2. Nama Barang
-		"merk",          // 3. Merk
-		"stok",          // 4. Stok
-		"harga_pokok",   // 5. Harga Pokok
-		"harga_jual",    // 6. Harga Jual Ecer
-		"stok_minimal",  // 7. Stok Min.
-		"stok_maksimal", // 8. Stok Max.
-		"keterangan",    // 9. Ket
-		"updated_at",    // 10. Latest Update
-		"",              // 11. Aksi (tidak di-sort)
+		"",
+		"kode_item",
+		"nama_item",
+		"merk",
+		"stok",
+		"harga_pokok",
+		"harga_jual",
+		"stok_minimal",
+		"stok_maksimal",
+		"keterangan",
+		"updated_at",
+		"", // 11. Aksi (tidak di-sort)
 	}
 
 	orderByColumn := columnNames[orderByColIndex]
@@ -87,13 +88,15 @@ func (a *BarangController) DatatablesAPI(ctx http.Context) http.Response {
 	}
 
 	// 5. Hitung Total Data Setelah Filter
-	// Clone query untuk menghitung jumlah setelah filter, lalu apply count
 	recordsFiltered, _ := db.Count()
 
 	// 6. Ambil Data dengan Pagination dan Sorting
 	var barangList []models.DataBarang
+
 	if orderByColumn != "" { // Pastikan kolom bisa di-sort
 		db = db.Order(orderClause)
+	} else {
+		db = db.Order("created_at DESC")
 	}
 
 	// Apply limit dan offset
@@ -151,10 +154,8 @@ func (b *BarangController) DetailAPI(ctx http.Context) http.Response {
 	err := facades.Orm().Query().Select("harga_toko", "harga_orang", "harga_bengkel", "kode_item").Where("id = ? AND is_deleted = ?", barangID, false).First(&barang)
 
 	if err != nil {
-		// Jika tidak ditemukan atau error database
 		return ctx.Response().Json(http.StatusNotFound, map[string]string{"message": "Data Barang tidak ditemukan"})
 	}
-
 	// Buat respons yang hanya berisi data harga spesifik
 	response := map[string]interface{}{
 		"kode_item":     barang.KodeItem,
@@ -169,7 +170,7 @@ func (b *BarangController) DetailAPI(ctx http.Context) http.Response {
 // Save To DB
 func (b *BarangController) Store(ctx http.Context) http.Response {
 	username := ctx.Request().Cookie("username")
-	user_id, _ := strconv.Atoi(ctx.Request().Cookie("user_id"))
+	userID, _ := strconv.Atoi(ctx.Request().Cookie("user_id"))
 	now := time.Now()
 
 	var req CreateBarangRequest
@@ -207,9 +208,9 @@ func (b *BarangController) Store(ctx http.Context) http.Response {
 		Keterangan:   req.Keterangan,
 		SkuBarang:    req.SkuBarang,
 		KodeBarcode:  req.KodeBarcode,
-		CreatedBy:    user_id, // Gunakan user_id dari cookie
+		CreatedBy:    userID, // Gunakan user_id dari cookie
 		CreatedAt:    &now,
-		UpdatedBy:    user_id,
+		UpdatedBy:    userID,
 		UpdatedAt:    &now,
 		IsDeleted:    false,
 	}
@@ -234,7 +235,7 @@ func (b *BarangController) Store(ctx http.Context) http.Response {
 			IsTranksaksi:       false,
 			TanggalPerubahan:   &now,
 			CreatedName:        username,
-			CreatedBy:          user_id,
+			CreatedBy:          userID,
 		}
 		facades.Orm().Query().Create(&history)
 	}
@@ -264,7 +265,7 @@ func (b *BarangController) EditAPI(ctx http.Context) http.Response {
 // Update: Menyimpan perubahan data barang
 func (b *BarangController) Update(ctx http.Context) http.Response {
 	username := ctx.Request().Cookie("username")
-	user_id, _ := strconv.Atoi(ctx.Request().Cookie("user_id"))
+	userID, _ := strconv.Atoi(ctx.Request().Cookie("user_id"))
 
 	now := time.Now()
 	barangID := ctx.Request().Route("id")
@@ -276,12 +277,6 @@ func (b *BarangController) Update(ctx http.Context) http.Response {
 	if err := ctx.Request().Bind(&req); err != nil {
 		return ctx.Response().Json(http.StatusBadRequest, map[string]string{"message": "Gagal membaca JSON: " + err.Error()})
 	}
-
-	body, _ := io.ReadAll(ctx.Request().Origin().Body)
-	fmt.Println("RAW BODY:", string(body))
-	ctx.Request().Bind(&req)
-	fmt.Printf("PARSED REQUEST: %+v\n", req)
-	fmt.Print(ctx.Request())
 
 	// 1. Validasi Sederhana
 	if req.NamaItem == "" || req.Stok < 0 || req.HargaPokok < 0 || req.HargaJual <= 0 {
@@ -312,7 +307,7 @@ func (b *BarangController) Update(ctx http.Context) http.Response {
 		StokMinimal:  req.StokMinimal,
 		StokMaksimal: req.StokMaksimal,
 		Keterangan:   req.Keterangan,
-		UpdatedBy:    user_id,
+		UpdatedBy:    userID,
 		UpdatedAt:    &now,
 	}
 
@@ -343,7 +338,7 @@ func (b *BarangController) Update(ctx http.Context) http.Response {
 			IsTranksaksi:       false, // Perubahan manual, bukan transaksi
 			TanggalPerubahan:   &now,
 			CreatedName:        username, // Ganti dengan nama user yang login
-			CreatedBy:          user_id,  // ID user yang login
+			CreatedBy:          userID,   // ID user yang login
 		}
 
 		facades.Orm().Query().Create(&history) // Simpan history (Error diabaikan untuk penyederhanaan)
@@ -353,8 +348,8 @@ func (b *BarangController) Update(ctx http.Context) http.Response {
 }
 
 func (b *BarangController) Delete(ctx http.Context) http.Response {
-	username := ctx.Request().Cookie("username") // Ambil data user dari cookie jika ada
-	user_id, _ := strconv.Atoi(ctx.Request().Cookie("user_id"))
+	username := ctx.Request().Cookie("username")
+	userID, _ := strconv.Atoi(ctx.Request().Cookie("user_id"))
 	now := time.Now()
 
 	barangID := ctx.Request().Route("id")
@@ -365,10 +360,10 @@ func (b *BarangController) Delete(ctx http.Context) http.Response {
 	// Data untuk soft delete
 	deleteData := map[string]interface{}{
 		"is_deleted": true,
-		"updated_by": user_id,
+		"updated_by": userID,
 		"updated_at": &now,
-		"deleted_at": &now,    // Tambahkan kolom deleted_at
-		"deleted_by": user_id, // Tambahkan kolom deleted_by
+		"deleted_at": &now,   // Tambahkan kolom deleted_at
+		"deleted_by": userID, // Tambahkan kolom deleted_by
 	}
 
 	// Lakukan update (soft delete)
@@ -401,11 +396,10 @@ func (b *BarangController) Delete(ctx http.Context) http.Response {
 			IsTranksaksi:       false,
 			TanggalPerubahan:   &now,
 			CreatedName:        username,
-			CreatedBy:          user_id,
+			CreatedBy:          userID,
 		}
 		facades.Orm().Query().Create(&history)
 	}
-	// Akhir History
 
 	return ctx.Response().Json(http.StatusOK, map[string]string{"message": "Data barang berhasil dihapus (soft delete)."})
 }
@@ -461,7 +455,7 @@ func (b *BarangController) SearchSuggestAPI(ctx http.Context) http.Response {
 // AddStock: Menambah stok barang dan mencatat history
 func (b *BarangController) AddStock(ctx http.Context) http.Response {
 	username := ctx.Request().Cookie("username")
-	user_id, _ := strconv.Atoi(ctx.Request().Cookie("user_id"))
+	userID, _ := strconv.Atoi(ctx.Request().Cookie("user_id"))
 
 	var req AddStockRequest
 	if err := ctx.Request().Bind(&req); err != nil {
@@ -488,7 +482,7 @@ func (b *BarangController) AddStock(ctx http.Context) http.Response {
 	// 4. Update Stok di database
 	updateData := map[string]interface{}{
 		"stok":       newStok,
-		"updated_by": user_id,
+		"updated_by": userID,
 		"updated_at": &now,
 	}
 
@@ -512,7 +506,7 @@ func (b *BarangController) AddStock(ctx http.Context) http.Response {
 		IsTranksaksi:       false, // Perubahan manual
 		TanggalPerubahan:   &now,
 		CreatedName:        username,
-		CreatedBy:          user_id,
+		CreatedBy:          userID,
 	}
 
 	facades.Orm().Query().Create(&history)

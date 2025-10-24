@@ -2,29 +2,13 @@ package controllers
 
 import (
 	"aura/app/models"
-	"fmt" // Import fmt untuk formatting string
+	"fmt"
 
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 )
 
 type BarangHistoryController struct{}
-
-// Struct Response yang diformat untuk dikirim ke template
-type HistoryResponse struct {
-	No                 int // Nomor urut
-	KodeBarang         string
-	NamaBarang         string
-	KodeTranksaksi     string
-	SourceChangeBarang string
-	QtyAwal            int
-	// QtyTranksaksiTampil akan berisi string "+10" atau "-5"
-	QtyTranksaksiTampil string
-	QtyTampilClass      string // Field baru untuk kelas CSS
-	QtyTerakhir         int
-	TanggalPerubahan    string // Sudah dalam format string (WIB)
-	CreatedName         string
-}
 
 // Index menampilkan halaman history, mengambil semua data history untuk di-looping di template
 func (h *BarangHistoryController) Index(ctx http.Context) http.Response {
@@ -60,16 +44,16 @@ func (h *BarangHistoryController) Index(ctx http.Context) http.Response {
 		}
 
 		formatted := HistoryResponse{
-			No:                  i + 1, // Nomor urut dimulai dari 1
+			No:                  i + 1,
 			KodeBarang:          h.KodeBarang,
 			NamaBarang:          h.NamaBarang,
 			KodeTranksaksi:      h.KodeTranksaksi,
 			SourceChangeBarang:  h.SourceChangeBarang,
 			QtyAwal:             h.QtyAwal,
-			QtyTranksaksiTampil: qtyTampil, // Sudah diformat
+			QtyTranksaksiTampil: qtyTampil,
 			QtyTerakhir:         h.QtyTerakhir,
-			TanggalPerubahan:    formatWIB(h.TanggalPerubahan), // Sudah diformat
-			QtyTampilClass:      qtyClass,                      // Set kelas
+			TanggalPerubahan:    formatWIB(h.TanggalPerubahan),
+			QtyTampilClass:      qtyClass,
 			CreatedName:         h.CreatedName,
 		}
 		formattedHistoryList = append(formattedHistoryList, formatted)
@@ -84,4 +68,18 @@ func (h *BarangHistoryController) Index(ctx http.Context) http.Response {
 	}
 
 	return ctx.Response().View().Make("data_barang/history.tmpl", data)
+}
+
+type HistoryResponse struct {
+	No                  int // Nomor urut
+	KodeBarang          string
+	NamaBarang          string
+	KodeTranksaksi      string
+	SourceChangeBarang  string
+	QtyAwal             int
+	QtyTranksaksiTampil string
+	QtyTampilClass      string // Field baru untuk kelas CSS
+	QtyTerakhir         int
+	TanggalPerubahan    string
+	CreatedName         string
 }
