@@ -1,0 +1,139 @@
+{{ define "jasa_services/index.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+{{ template "layout/head.tmpl" . }}
+
+<body>
+
+  <style>
+    body {
+      background-color: #f8f9fc;
+      font-family: "Nunito", sans-serif;
+    }
+
+    .card-service {
+      border-left: 6px solid #0073ff;
+      /* warna kuning di kiri */
+      transition: all 0.2s ease-in-out;
+      min-height: 150px;
+      background-color: #fff;
+    }
+
+    .card-service:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .text-gray-800 {
+      color: #5a5c69 !important;
+    }
+
+    .text-warning {
+      color: #f6c23e !important;
+    }
+
+    .fw-bold {
+      font-weight: 700 !important;
+    }
+
+    .h4 {
+      font-size: 1.5rem !important;
+    }
+
+    .h5 {
+      font-size: 1.25rem !important;
+    }
+
+    .h6 {
+      font-size: 1.1rem !important;
+    }
+
+    .badge {
+      font-size: 0.9rem;
+    }
+    
+  </style>
+  <div class="wrapper">
+    {{ template "layout/sidebar.tmpl" . }}
+    <div class="main-panel">
+      {{ template "layout/mainheader.tmpl" . }}
+      <div class="container">
+        <div class="page-inner">
+          <!-- Card -->
+          <h3 class="fw-bold mb-3">Jasa Services {{.jam}}</h3>
+          <div class="row">
+            <div class="col-sm-6 col-md-3">
+              <div class="card card-stats card-primary card-round">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-5">
+                      <div class="icon-big text-center">
+                        <i class="fas fa-users"></i>
+                      </div>
+                    </div>
+                    <div class="col-7 col-stats">
+                      <div class="numbers">
+                        <p class="card-category">Services Dalam Proses</p>
+                        <h4 class="card-title">1,294</h4>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+              <div class="card card-stats card-info card-round">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-5">
+                      <div class="icon-big text-center">
+                        <i class="fas fa-user-check"></i>
+                      </div>
+                    </div>
+                    <div class="col-7 col-stats">
+                      <div class="numbers">
+                        <p class="card-category">Services Sudah Selesai</p>
+                        <h4 class="card-title">1303</h4>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <!-- Contoh Card -->
+            {{ range .ServiceList }}
+            <div class="col-xl-3 col-md-4 mb-4">
+              <a href="#" class="text-decoration-none">
+                <div class="card card-service shadow h-100 py-2">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col me-2">
+                        <div class="h6 mb-1 fw-bold text-gray-800">{{ .KodeServices }}</div>
+                        <div class="h4 fw-bold text-info text-uppercase mb-1">{{ .NoPolisi }}</div>
+                        <div class="h5 mb-1 fw-bold text-gray-800">{{ .TypeMotor }}</div>
+                        <div class="h6 mb-1 fw-bold text-gray-800">Mekanik:</div>
+                        <div class="h6 mb-0 fw-bold text-gray-800">{{ .CreatedAt.Format "02-01-2006 15:04" }}</div>
+                      </div>
+                      <div class="col-auto text-end">
+                        <span class="badge bg-info text-white px-3 py-2">{{ .StatusServices }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+            {{ end }}
+          </div>
+        </div>
+      </div>
+      {{ template "layout/footer.tmpl" . }}
+    </div>
+  </div>
+  <!-- JS -->
+  {{ template "jasa_services/_datatable_script.tmpl" . }}
+</body>
+
+</html>
+{{ end }}

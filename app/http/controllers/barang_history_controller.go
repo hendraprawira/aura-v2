@@ -12,6 +12,8 @@ type BarangHistoryController struct{}
 
 // Index menampilkan halaman history, mengambil semua data history untuk di-looping di template
 func (h *BarangHistoryController) Index(ctx http.Context) http.Response {
+	username := ctx.Request().Cookie("username")
+	role := ctx.Request().Cookie("role")
 	barangID := ctx.Request().Route("id")
 
 	// 1. Ambil Data Barang utama (untuk mendapatkan Kode Barang)
@@ -61,10 +63,15 @@ func (h *BarangHistoryController) Index(ctx http.Context) http.Response {
 
 	// 4. Persiapkan data yang akan dikirim ke template
 	data := map[string]interface{}{
-		"BarangID":   barangID,
-		"KodeBarang": barang.KodeItem,
-		"NamaBarang": barang.NamaItem,
-		"History":    formattedHistoryList, // Kirim data yang sudah diformat
+		"BarangID":    barangID,
+		"KodeBarang":  barang.KodeItem,
+		"NamaBarang":  barang.NamaItem,
+		"History":     formattedHistoryList, // Kirim data yang sudah diformat
+		"username":    username,
+		"role":        role,
+		"activeGroup": "master-data",
+		"activeMenu":  "data-jasa",
+		"menu":        "Data Jasa",
 	}
 
 	return ctx.Response().View().Make("data_barang/history.tmpl", data)

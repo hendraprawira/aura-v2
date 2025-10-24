@@ -58,6 +58,31 @@
                   </ul>
                 </div>
               </li>
+
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#forms" aria-expanded="{{if eq .activeGroup "pelayanan"}}true{{else}}false{{end}}">
+                  <i class="fas fa-pen-square"></i>
+                  <p>Pelayanan</p>
+                  <span class="caret"></span>
+                </a>
+              
+                <div class="collapse {{if eq .activeGroup "pelayanan"}}show{{end}}" id="forms">
+                  <ul class="nav nav-collapse">
+                    <li class="{{if eq .activeMenu "jasa-services"}}active{{end}}">
+                      <a href="/jasa-services">
+                        <span class="sub-item">Jasa Services</span>
+                      </a>
+                    </li>
+                    <li class="{{if eq .activeMenu "Penjualan"}}active{{end}}">
+                      <a href="/penjualan">
+                        <span class="sub-item">Penjualan</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+
+              
             </ul>
           </div>
         </div>
